@@ -1,0 +1,271 @@
+body {
+    background-color: #141414;
+    color: white;
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 15px;
+}
+
+/* HEADER & LOGO */
+.site-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 20px;
+    gap: 12px;
+}
+
+.site-logo {
+    max-height: 60px;
+    width: auto;
+    object-fit: contain;
+}
+
+.dialog-logo {
+    max-height: 50px;
+    margin-bottom: 10px;
+    object-fit: contain;
+}
+
+/* SEARCH BAR */
+.search-container {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    gap: 8px;
+}
+
+.search-input {
+    width: 70%;
+    max-width: 400px;
+    padding: 12px;
+    border-radius: 6px;
+    border: 1px solid #333;
+    background: #222;
+    color: white;
+    outline: none;
+    font-size: 15px;
+}
+
+.search-btn {
+    background-color: #e50914;
+    color: white;
+    border: none;
+    padding: 12px 18px;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+/* SHOWCASE CARD */
+.showcase-area {
+    display: flex;
+    justify-content: center;
+}
+
+.movie-card {
+    background: #1f1f1f;
+    padding: 15px;
+    border-radius: 10px;
+    width: 270px;
+    text-align: center;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.6);
+}
+
+.poster {
+    width: 100%;
+    border-radius: 8px;
+    min-height: 360px;
+    object-fit: cover;
+    background: #333;
+}
+
+#cardTitle {
+    margin: 10px 0 5px 0;
+    font-size: 18px;
+}
+
+#cardRating {
+    color: #46d369;
+    margin: 0 0 10px 0;
+    font-size: 14px;
+}
+
+.badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    margin-bottom: 6px;
+}
+
+.badge-movie { background: #007bff; }
+.badge-tv { background: #9b59b6; }
+
+/* SEASON & EPISODE DROPDOWNS */
+.series-controls {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    margin: 10px 0;
+}
+
+.series-controls select {
+    padding: 8px;
+    border-radius: 4px;
+    border: 1px solid #444;
+    background: #333;
+    color: white;
+    width: 50%;
+    cursor: pointer;
+    font-size: 13px;
+}
+
+.btn-watch {
+    background-color: #e50914;
+    color: white;
+    border: none;
+    padding: 12px;
+    font-weight: bold;
+    border-radius: 6px;
+    cursor: pointer;
+    width: 100%;
+    margin-top: 10px;
+    font-size: 15px;
+}
+
+.btn-watch:hover {
+    background-color: #f40612;
+}
+
+/* MODALS / POPUPS */
+.modal-overlay {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.95);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+.modal-box {
+    background: #1f1f1f;
+    padding: 20px;
+    border-radius: 10px;
+    width: 90%;
+    max-width: 400px;
+    box-sizing: border-box;
+    text-align: center;
+    position: relative;
+}
+
+.modal-search {
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+.dialog-title {
+    color: #e50914;
+    margin: 0;
+}
+
+.dialog-desc {
+    font-size: 13px;
+    color: #bbb;
+}
+
+.user-status {
+    font-size: 12px;
+    color: #46d369;
+    margin-bottom: 8px;
+    font-weight: bold;
+}
+
+.paywall-input, .paywall-btn {
+    width: 100%;
+    padding: 10px;
+    margin: 5px 0;
+    border-radius: 5px;
+    box-sizing: border-box;
+}
+
+.paywall-input {
+    background: #2a2a2a;
+    border: 1px solid #444;
+    color: white;
+}
+
+.paywall-btn {
+    border: none;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.btn-google { background: #4285f4; color: white; }
+.btn-paypal { background: #0070ba; color: white; }
+.btn-submit { background: #28a745; color: white; }
+.btn-secret { background: #ff9800; color: black; }
+.btn-dev { background: #229ED9; color: white; }
+
+.transaction-box {
+    background: #111;
+    padding: 12px;
+    border-radius: 6px;
+    margin-top: 8px;
+}
+
+.tx-title {
+    margin: 0 0 8px 0;
+    font-size: 13px;
+    font-weight: bold;
+}
+
+.secret-pass-box {
+    margin-top: 10px;
+    border-top: 1px solid #333;
+    padding-top: 10px;
+}
+
+/* SEARCH RESULTS ITEMS */
+.result-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px;
+    border-bottom: 1px solid #333;
+    cursor: pointer;
+    text-align: left;
+}
+
+.result-item:hover {
+    background: #2a2a2a;
+}
+
+/* BUILT-IN PLAYER */
+.player-frame {
+    width: 95%;
+    max-width: 900px;
+    aspect-ratio: 16/9;
+    position: relative;
+}
+
+.player-frame iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+    border-radius: 8px;
+}
+
+.close-btn {
+    position: absolute;
+    top: -40px; right: 0;
+    background: #e50914;
+    color: white;
+    border: none;
+    padding: 6px 14px;
+    cursor: pointer;
+    font-weight: bold;
+    border-radius: 4px;
+}

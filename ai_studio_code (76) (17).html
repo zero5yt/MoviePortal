@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StreamixPH - Movies & Series</title>
+    
+    <!-- Link sa hiwalay na CSS -->
+    <link rel="stylesheet" href="style.css">
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+</head>
+<body>
+
+    <!-- 1. POPUP DIALOG / PAYWALL ON LOAD -->
+    <div id="gatekeeperModal" class="modal-overlay">
+        <div class="modal-box">
+            <!-- LOGO SA LOOB NG DIALOG -->
+            <img src="logo.png" alt="Logo" class="dialog-logo" onerror="this.style.display='none'">
+            <h2 class="dialog-title">StreamixPH VIP</h2>
+            <p class="dialog-desc">Mag-sign in gamit ang Google at magbayad para ma-unlock ang buong access.</p>
+
+            <div id="userInfo" class="user-status">Status: Not Logged In</div>
+
+            <button class="paywall-btn btn-google" onclick="loginWithGoogle()">🔑 Sign In with Google</button>
+            <button class="paywall-btn btn-paypal" onclick="openPayPal()">💳 Pay 50 PHP via PayPal</button>
+
+            <!-- SUBMIT TRANSACTION PROOF -->
+            <div class="transaction-box">
+                <p class="tx-title">Transaction Verification:</p>
+                <input type="text" id="refInput" class="paywall-input" placeholder="PayPal Reference / TxID">
+                <input type="file" id="proofInput" class="paywall-input" accept="image/*">
+                <button class="paywall-btn btn-submit" onclick="submitTransaction()">📤 Send Transaction Proof</button>
+            </div>
+
+            <!-- ADMIN SECRET PASS -->
+            <div class="secret-pass-box">
+                <input type="password" id="secretPassInput" class="paywall-input" placeholder="Admin Secret Password">
+                <button class="paywall-btn btn-secret" onclick="checkSecretPass()">Unlock with Password</button>
+            </div>
+
+            <button class="paywall-btn btn-dev" onclick="contactDev()">✈ Contact Telegram Dev</button>
+        </div>
+    </div>
+
+    <!-- 2. HEADER NA MAY LOGO AT SEARCH BAR -->
+    <header class="site-header">
+        <div class="logo-container">
+            <img src="logo.png" alt="StreamixPH" class="site-logo" onerror="this.style.display='none'">
+        </div>
+        <div class="search-container">
+            <input type="text" id="searchInput" class="search-input" placeholder="Search Movie or Series..." onkeydown="if(event.key==='Enter') searchTMDB()">
+            <button class="search-btn" onclick="searchTMDB()">Search</button>
+        </div>
+    </header>
+
+    <!-- 3. SHOWCASE MOVIE/SERIES CARD -->
+    <main class="showcase-area">
+        <div class="movie-card">
+            <span id="cardBadge" class="badge badge-tv">SERIES</span>
+            <img id="cardPoster" class="poster" src="https://image.tmdb.org/t/p/w500/dum1NsAYVfyxGM14DYJgNf5i89q.jpg" alt="Poster">
+            <h3 id="cardTitle">One Piece</h3>
+            <p id="cardRating">&#9733; 8.8 Rating (1999)</p>
+
+            <!-- Dynamic Season at Episode Dropdown -->
+            <div id="seriesControls" class="series-controls">
+                <select id="seasonSelect" onchange="loadSeasonEpisodes()"></select>
+                <select id="episodeSelect"></select>
+            </div>
+
+            <button class="btn-watch" onclick="handleWatchClick()">Watch Now</button>
+        </div>
+    </main>
+
+    <!-- 4. SEARCH RESULTS MODAL -->
+    <div id="searchModal" class="modal-overlay">
+        <div class="modal-box modal-search">
+            <button class="close-btn" onclick="closeSearchModal()">✕</button>
+            <h3 style="margin-top:0;">Search Results</h3>
+            <div id="searchResultsList"></div>
+        </div>
+    </div>
+
+    <!-- 5. BUILT-IN PLAYER -->
+    <div id="playerModal" class="modal-overlay">
+        <div class="player-frame">
+            <button class="close-btn" onclick="closePlayer()">✕ Close</button>
+            <iframe id="videoPlayer" src="" allowfullscreen allow="autoplay"></iframe>
+        </div>
+    </div>
+
+    <!-- Link sa hiwalay na JavaScript -->
+    <script src="script.js"></script>
+</body>
+</html>
