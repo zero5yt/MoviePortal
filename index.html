@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>StreamixPH - Movies & Series</title>
     
-    <!-- Link sa hiwalay na CSS -->
     <link rel="stylesheet" href="style.css">
 
     <!-- Firebase SDKs -->
@@ -15,25 +14,23 @@
 </head>
 <body>
 
-    <!-- 1. POPUP DIALOG / PAYWALL ON LOAD -->
+    <!-- 1. POPUP DIALOG / PAYWALL -->
     <div id="gatekeeperModal" class="modal-overlay">
         <div class="modal-box">
-            <!-- LOGO SA LOOB NG DIALOG -->
             <img src="logo.png" alt="Logo" class="dialog-logo" onerror="this.style.display='none'">
             <h2 class="dialog-title">StreamixPH VIP</h2>
-            <p class="dialog-desc">Mag-sign in gamit ang Google at magbayad para ma-unlock ang buong access.</p>
+            <p class="dialog-desc">Mag-sign in gamit ang Google at magbayad para ma-unlock ang access.</p>
 
             <div id="userInfo" class="user-status">Status: Not Logged In</div>
 
             <button class="paywall-btn btn-google" onclick="loginWithGoogle()">🔑 Sign In with Google</button>
             <button class="paywall-btn btn-paypal" onclick="openPayPal()">💳 Pay 50 PHP via PayPal</button>
 
-            <!-- SUBMIT TRANSACTION PROOF -->
+            <!-- SUBMIT TRANSACTION ID ONLY (WALANG SCREENSHOT) -->
             <div class="transaction-box">
-                <p class="tx-title">Transaction Verification:</p>
-                <input type="text" id="refInput" class="paywall-input" placeholder="PayPal Reference / TxID">
-                <input type="file" id="proofInput" class="paywall-input" accept="image/*">
-                <button class="paywall-btn btn-submit" onclick="submitTransaction()">📤 Send Transaction Proof</button>
+                <p class="tx-title">Submit PayPal Transaction ID:</p>
+                <input type="text" id="refInput" class="paywall-input" placeholder="Enter Transaction / Reference ID">
+                <button class="paywall-btn btn-submit" onclick="submitTransaction()">📤 Send Transaction ID</button>
             </div>
 
             <!-- ADMIN SECRET PASS -->
@@ -46,11 +43,23 @@
         </div>
     </div>
 
-    <!-- 2. HEADER NA MAY LOGO AT SEARCH BAR -->
+    <!-- 2. HEADER NA MAY PROFILE SA TAAS KALIWA AT LOGO/SEARCH -->
     <header class="site-header">
-        <div class="logo-container">
+        <div class="top-bar">
+            <!-- GOOGLE AVATAR & WELCOME MESSAGE SA KALIWA -->
+            <div id="userProfileHeader" class="user-profile-header">
+                <img id="userAvatar" src="https://www.gstatic.com/images/branding/product/1x/avatar_square_grey_512dp.png" alt="Profile" class="user-avatar">
+                <div class="user-info-text">
+                    <span id="userWelcome" class="user-welcome">Welcome!</span>
+                    <span class="user-vip-badge">VIP Member</span>
+                </div>
+            </div>
+
+            <!-- LOGO SA KANAN/GITNA -->
             <img src="logo.png" alt="StreamixPH" class="site-logo" onerror="this.style.display='none'">
         </div>
+
+        <!-- SEARCH BAR -->
         <div class="search-container">
             <input type="text" id="searchInput" class="search-input" placeholder="Search Movie or Series..." onkeydown="if(event.key==='Enter') searchTMDB()">
             <button class="search-btn" onclick="searchTMDB()">Search</button>
@@ -65,7 +74,6 @@
             <h3 id="cardTitle">One Piece</h3>
             <p id="cardRating">&#9733; 8.8 Rating (1999)</p>
 
-            <!-- Dynamic Season at Episode Dropdown -->
             <div id="seriesControls" class="series-controls">
                 <select id="seasonSelect" onchange="loadSeasonEpisodes()"></select>
                 <select id="episodeSelect"></select>
@@ -92,7 +100,6 @@
         </div>
     </div>
 
-    <!-- Link sa hiwalay na JavaScript -->
     <script src="script.js"></script>
 </body>
 </html>
