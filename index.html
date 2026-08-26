@@ -7,7 +7,7 @@
     
     <link rel="stylesheet" href="style.css">
 
-    <!-- Firebase SDKs -->
+    <!-- Firebase SDKs (Realtime Database) -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
@@ -26,18 +26,15 @@
             <button class="paywall-btn btn-google" onclick="loginWithGoogle()">🔑 Sign In with Google</button>
             <button class="paywall-btn btn-paypal" onclick="openPayPal()">💳 Pay 50 PHP via PayPal</button>
 
-            <!-- SUBMIT TRANSACTION ID -->
+            <!-- SUBMIT TRANSACTION ID ONLY -->
             <div class="transaction-box">
                 <p class="tx-title">Submit PayPal Transaction ID:</p>
                 <input type="text" id="refInput" class="paywall-input" placeholder="Enter Transaction / Reference ID">
                 <button class="paywall-btn btn-submit" onclick="submitTransaction()">📤 Send Transaction ID</button>
             </div>
 
-            <!-- ADMIN SECRET PASS -->
-            <div class="secret-pass-box">
-                <input type="password" id="secretPassInput" class="paywall-input" placeholder="Admin Secret Password">
-                <button class="paywall-btn btn-secret" onclick="checkSecretPass()">Unlock with Password</button>
-            </div>
+            <!-- SECURE OWNER CHECK (Hindi na na-kacrck) -->
+            <button class="paywall-btn btn-owner" onclick="checkOwnerAccess()">👑 Owner / Admin Instant Unlock</button>
 
             <button class="paywall-btn btn-dev" onclick="contactDev()">✈ Contact Telegram Dev</button>
         </div>
@@ -62,14 +59,13 @@
         </div>
     </header>
 
-    <!-- 3. SHOWCASE CARD NA MAY FADE CAROUSEL AT DOTS -->
+    <!-- 3. SHOWCASE CARD NA MAY TRENDING CAROUSEL AT FADE ANIMATION -->
     <main class="showcase-area">
         <div class="movie-card">
-            <!-- Naka-wrap ang content para sa Fade Transition -->
-            <div id="cardFadeContent" class="fade-container">
+            <div id="cardFadeContent" class="fade-element">
                 <span id="cardBadge" class="badge badge-tv">SERIES</span>
                 <img id="cardPoster" class="poster" src="" alt="Poster">
-                <h3 id="cardTitle">Loading...</h3>
+                <h3 id="cardTitle">Loading Trending...</h3>
                 <p id="cardRating">&#9733; Rating</p>
 
                 <div id="seriesControls" class="series-controls">
@@ -78,18 +74,23 @@
                 </div>
             </div>
 
+            <!-- SERVER SELECTOR (PARA SA SUBTITLES / CC) -->
+            <div class="server-box">
+                <label>Streaming Server:</label>
+                <select id="serverSelect">
+                    <option value="1">Server 1 (Vidup - Fast)</option>
+                    <option value="2">Server 2 (VidSrc - Multi Subtitles / Tagalog)</option>
+                </select>
+            </div>
+
             <button class="btn-watch" onclick="handleWatchClick()">Watch Now</button>
 
-            <!-- 🔘 3 CAROUSEL DOTS SA IBABA -->
-            <div id="carouselDots" class="carousel-dots">
-                <span class="dot active" onclick="manualSelectSlide(0)"></span>
-                <span class="dot" onclick="manualSelectSlide(1)"></span>
-                <span class="dot" onclick="manualSelectSlide(2)"></span>
-            </div>
+            <!-- 🔘 DYNAMIC CAROUSEL DOTS -->
+            <div id="carouselDots" class="carousel-dots"></div>
         </div>
     </main>
 
-    <!-- 4. SEARCH MODAL -->
+    <!-- 4. SEARCH RESULTS POPUP (MAY YEAR) -->
     <div id="searchModal" class="modal-overlay">
         <div class="modal-box modal-search">
             <button class="close-btn" onclick="closeSearchModal()">✕</button>
