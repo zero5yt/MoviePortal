@@ -14,10 +14,10 @@ const firebaseConfig = {
     measurementId: "G-S6D0NHPD6N"
 };
 
-// Initialize Firebase
+// Initialize Firebase Realtime Database
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
-const db = firebase.firestore();
+const db = firebase.database();
 
 let currentUser = null;
 let currentItem = { id: 37854, type: 'tv' };
@@ -35,8 +35,8 @@ function loginWithGoogle() {
 }
 
 function checkUserPaymentStatus(uid) {
-    db.collection("users").doc(uid).get().then(doc => {
-        if (doc.exists && doc.data().isPaid === true) {
+    db.ref('users/' + uid).once('value').then(snapshot => {
+        if (snapshot.exists() && snapshot.val().isPaid === true) {
             alert("Welcome VIP User!");
             unlockSite();
         } else {
@@ -70,7 +70,6 @@ function contactDev() {
     window.open(TELEGRAM_LINK, '_blank');
 }
 
-// I-UPDATE ANG HEADER SA TAAS KALIWA
 function updateHeaderUser(user) {
     const avatar = document.getElementById('userAvatar');
     const welcome = document.getElementById('userWelcome');
@@ -84,7 +83,7 @@ function updateHeaderUser(user) {
     }
 }
 
-// SUBMIT TRANSACTION ID LANG (MAGAAN AT HINDI MAPUPUNO ANG DATABASE)
+// 🚀 DIRECT SEND SA REALTIME DATABASE (WALANG SABLAY!)
 function submitTransaction() {
     const refNo = document.getElementById('refInput').value.trim();
 
@@ -97,15 +96,15 @@ function submitTransaction() {
         return;
     }
 
-    db.collection("transactions").add({
+    db.ref('transactions').push({
         uid: currentUser.uid,
         email: currentUser.email,
         name: currentUser.displayName,
         referenceNumber: refNo,
         status: "Pending",
-        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+        timestamp: Date.now()
     }).then(() => {
-        alert("✅ Transaction ID Sent! Hintaying i-approve ng Admin.");
+        alert("✅ SUCCESS! Naipadala na ang Transaction ID.\nHintaying i-confirm sa Admin Dashboard.");
         document.getElementById('refInput').value = "";
     }).catch(err => {
         alert("❌ Error: " + err.message);
