@@ -2,6 +2,7 @@
 const TMDB_API_KEY = "86fd55697899e8444fa3da3ddd24518d";
 const PAYPAL_LINK = "https://paypal.me/RoderickAlmaras/50PHP";
 const TELEGRAM_LINK = "https://t.me/pinomaxTvVip";
+const OWNER_EMAIL = "roderickalmaras05@gmail.com"; // Ang iyong secure Admin Gmail
 
 const firebaseConfig = {
     apiKey: "AIzaSyCEGHT9fn6j-Yu-uBwUneBUenmBdBf-ymM",
@@ -22,15 +23,9 @@ const db = firebase.database();
 let currentUser = null;
 let currentItem = { id: 37854, type: 'tv' };
 
-// 🎬 TATLONG FEATURED ITEMS PARA SA CAROUSEL
-const carouselList = [
-    { id: 37854, type: 'tv', name: 'One Piece', poster: 'https://image.tmdb.org/t/p/w500/cMD9Ygz11yjYnzv0VgtmuNeE9mP.jpg', rating: 8.8, year: '1999' },
-    { id: 1062722, type: 'movie', name: 'Frankenstein', poster: 'https://image.tmdb.org/t/p/w500/g4JtvGlQO7DByTI6frUobqvSL3R.jpg', rating: 8.4, year: '2025' },
-    { id: 85937, type: 'tv', name: 'Demon Slayer', poster: 'https://image.tmdb.org/t/p/w500/xUfRZu2mi8jH6SzQEJGP6tjBuYj.jpg', rating: 8.7, year: '2019' }
-];
-
+let trendingList = [];
 let currentSlideIndex = 0;
-let carouselTimer = null;
+let carouselInterval = null;
 
 // --- GOOGLE AUTH & PAYWALL ---
 
@@ -40,6 +35,14 @@ function loginWithGoogle() {
         currentUser = result.user;
         document.getElementById('userInfo').innerText = `Logged in: ${currentUser.displayName}`;
         updateHeaderUser(currentUser);
+
+        // Auto-unlock kung ikaw ang Owner
+        if (currentUser.email === OWNER_EMAIL) {
+            alert("👑 Welcome Owner Roderick! VIP Unlocked.");
+            unlockSite();
+            return;
+        }
+
         checkUserPaymentStatus(currentUser.uid);
     }).catch(err => alert("Google Login Error: " + err.message));
 }
@@ -55,16 +58,17 @@ function checkUserPaymentStatus(uid) {
     });
 }
 
-function checkSecretPass() {
-    const pass = document.getElementById('secretPassInput').value.trim();
-    if (pass === "almaras") {
-        alert("Access Granted via Secret Pass!");
-        if (!currentUser) {
-            updateHeaderUser({ displayName: "Admin Roderick", photoURL: "" });
-        }
+// 🛡️ SECURE ADMIN CHECK (Gmail-based, walang password na mananakaw)
+function checkOwnerAccess() {
+    if (!currentUser) {
+        alert("Pindutin muna ang 'Sign In with Google' gamit ang Admin Gmail mo!");
+        return;
+    }
+    if (currentUser.email === OWNER_EMAIL) {
+        alert("👑 Owner Access Granted!");
         unlockSite();
     } else {
-        alert("Maling Password!");
+        alert("❌ Hindi authorized ang email na ito bilang Admin!");
     }
 }
 
@@ -115,63 +119,109 @@ function submitTransaction() {
     });
 }
 
-// --- 🌟 CAROUSEL ENGINE (FADE IN / FADE OUT) ---
+// --- 🌟 REAL-TIME TMDB TRENDING CAROUSEL ENGINE ---
 
-function applySlide(index) {
-    const item = carouselList[index];
+async function fetchTrendingAndStartCarousel() {
+    try {
+        // Kumuha ng Top 4 Trending Movies & Series sa TMDB
+        const res = await fetch(`https://api.themoviedb.org/3/trending/all/day?api_key=${TMDB_API_KEY}`);
+        const data = await res.json();
+        
+        trendingList = (data.results || [])
+            .filter(item => (item.media_type === 'movie' || item.media_type === 'tv') && item.poster_path)
+            .slice(0, 4);
+
+        if (trendingList.length === 0) {
+            // Fallback kung walang internet
+            trendingList = [
+                { id: 37854, media_type: 'tv', name: 'One Piece', poster_path: '/cMD9Ygz11yjYnzv0VgtmuNeE9mP.jpg', vote_average: 8.8, first_air_date: '1999' }
+            ];
+        }
+
+        renderDots();
+        showSlide(0);
+        startAutoSlide();
+    } catch (e) {
+        console.error("Trending error:", e);
+    }
+}
+
+function renderDots() {
+    const dotsContainer = document.getElementById('carouselDots');
+    dotsContainer.innerHTML = "";
+    trendingList.forEach((_, idx) => {
+        const dot = document.createElement('span');
+        dot.className = `dot ${idx === 0 ? 'active' : ''}`;
+        dot.onclick = () => manualSelectSlide(idx);
+        dotsContainer.appendChild(dot);
+    });
+}
+
+async function showSlide(index) {
+    if (!trendingList || trendingList.length === 0) return;
+    currentSlideIndex = index;
+    const item = trendingList[index];
     const container = document.getElementById('cardFadeContent');
 
-    // 1. Fade out muna
-    container.classList.add('fading');
+    // 1. Fade Out
+    container.classList.add('fade-out');
 
     setTimeout(async () => {
         // 2. Palitan ang laman habang nakatago
-        currentItem.id = item.id;
-        currentItem.type = item.type;
+        const isTv = item.media_type === 'tv';
+        const title = item.title || item.name;
+        const date = item.release_date || item.first_air_date || '';
+        const year = date ? `(${date.split('-')[0]})` : '';
 
-        document.getElementById('cardTitle').innerText = item.name;
-        document.getElementById('cardPoster').src = item.poster;
-        document.getElementById('cardRating').innerHTML = `&#9733; ${item.rating} Rating (${item.year})`;
+        currentItem.id = item.id;
+        currentItem.type = item.media_type;
+
+        document.getElementById('cardTitle').innerText = title;
+        document.getElementById('cardPoster').src = `https://image.tmdb.org/t/p/w500${item.poster_path}`;
+        document.getElementById('cardRating').innerHTML = `&#9733; ${item.vote_average ? item.vote_average.toFixed(1) : 'N/A'} Rating ${year}`;
 
         const badge = document.getElementById('cardBadge');
-        badge.innerText = item.type === 'tv' ? 'SERIES' : 'MOVIE';
-        badge.className = `badge ${item.type === 'tv' ? 'badge-tv' : 'badge-movie'}`;
+        badge.innerText = isTv ? 'SERIES' : 'MOVIE';
+        badge.className = `badge ${isTv ? 'badge-tv' : 'badge-movie'}`;
 
         const controls = document.getElementById('seriesControls');
-
-        if (item.type === 'tv') {
+        if (isTv) {
             controls.style.display = 'flex';
             await loadSeasonsForTv(item.id);
         } else {
             controls.style.display = 'none';
         }
 
-        // 3. I-update ang Active Dots
+        // 3. I-update ang Dots
         const dots = document.querySelectorAll('.carousel-dots .dot');
-        dots.forEach((d, i) => {
-            d.classList.toggle('active', i === index);
-        });
+        dots.forEach((d, i) => d.classList.toggle('active', i === index));
 
-        // 4. Fade back in
-        container.classList.remove('fading');
-    }, 350);
+        // 4. Fade Back In
+        container.classList.remove('fade-out');
+    }, 400);
 }
 
-function startCarousel() {
-    if (carouselTimer) clearInterval(carouselTimer);
-    carouselTimer = setInterval(() => {
-        currentSlideIndex = (currentSlideIndex + 1) % carouselList.length;
-        applySlide(currentSlideIndex);
-    }, 4500); // Lilipat kusa bawat 4.5 seconds
+function startAutoSlide() {
+    stopAutoSlide();
+    carouselInterval = setInterval(() => {
+        const next = (currentSlideIndex + 1) % trendingList.length;
+        showSlide(next);
+    }, 4500); // Kusa lilipat bawat 4.5 seconds
+}
+
+function stopAutoSlide() {
+    if (carouselInterval) {
+        clearInterval(carouselInterval);
+        carouselInterval = null;
+    }
 }
 
 function manualSelectSlide(index) {
-    currentSlideIndex = index;
-    applySlide(index);
-    startCarousel(); // I-reset ang timer pag pinindot ang dot
+    showSlide(index);
+    startAutoSlide();
 }
 
-// --- TMDB SEASONS & EPISODES FETCHER ---
+// --- TMDB SEASONS & EPISODES ---
 
 async function loadSeasonsForTv(tvId) {
     try {
@@ -215,7 +265,7 @@ async function loadSeasonEpisodes() {
     }
 }
 
-// --- TMDB SEARCH (ITITIGIL ANG CAROUSEL KAPAG MAY HINANAP NA SPECIFIC) ---
+// --- 🔍 SEARCH NA MAY TAON / YEAR SA POPUP ---
 
 async function searchTMDB() {
     const query = document.getElementById('searchInput').value.trim();
@@ -230,18 +280,30 @@ async function searchTMDB() {
         list.innerHTML = "";
 
         const filtered = (data.results || []).filter(item => item.media_type === 'movie' || item.media_type === 'tv');
+        
+        if (filtered.length === 0) {
+            list.innerHTML = "<p style='padding:15px; color:#888;'>Walang nahanap na movie o series.</p>";
+        }
+
         filtered.forEach(item => {
             const title = item.title || item.name;
             const isTv = item.media_type === 'tv';
+            const date = item.release_date || item.first_air_date || 'N/A';
+            const year = date !== 'N/A' ? date.split('-')[0] : 'N/A';
             const poster = item.poster_path ? `https://image.tmdb.org/t/p/w200${item.poster_path}` : 'https://via.placeholder.com/150';
             
             const div = document.createElement('div');
             div.className = 'result-item';
             div.innerHTML = `
-                <img src="${poster}" width="45" style="border-radius:4px;">
-                <div>
-                    <div style="font-weight:bold;">${title}</div>
-                    <span class="badge ${isTv ? 'badge-tv' : 'badge-movie'}">${isTv ? 'SERIES' : 'MOVIE'}</span>
+                <img src="${poster}" width="50" height="70" style="border-radius:4px; object-fit:cover;">
+                <div class="result-info">
+                    <div class="result-title-row">
+                        ${title} <span class="result-year-badge">(${year})</span>
+                    </div>
+                    <div>
+                        <span class="badge ${isTv ? 'badge-tv' : 'badge-movie'}">${isTv ? 'SERIES' : 'MOVIE'}</span>
+                        <span style="font-size:12px; color:#46d369; margin-left:6px;">&#9733; ${item.vote_average ? item.vote_average.toFixed(1) : 'N/A'}</span>
+                    </div>
                 </div>
             `;
             div.onclick = () => selectSearchedItem(item);
@@ -255,21 +317,25 @@ async function searchTMDB() {
 }
 
 async function selectSearchedItem(item) {
-    // Ititigil ang auto-slide para hindi mapalitan ang hinanap ng user
-    if (carouselTimer) clearInterval(carouselTimer);
+    // Itigil ang carousel para manatili ang hinanap
+    stopAutoSlide();
     document.getElementById('carouselDots').style.display = 'none';
 
     const isTv = item.media_type === 'tv';
+    const title = item.title || item.name;
+    const date = item.release_date || item.first_air_date || '';
+    const year = date ? `(${date.split('-')[0]})` : '';
+
     currentItem.id = item.id;
     currentItem.type = item.media_type;
 
     const container = document.getElementById('cardFadeContent');
-    container.classList.add('fading');
+    container.classList.add('fade-out');
 
     setTimeout(async () => {
-        document.getElementById('cardTitle').innerText = item.title || item.name;
+        document.getElementById('cardTitle').innerText = title;
         document.getElementById('cardPoster').src = item.poster_path ? `https://image.tmdb.org/t/p/w500${item.poster_path}` : 'https://via.placeholder.com/500x750?text=No+Poster';
-        document.getElementById('cardRating').innerHTML = `&#9733; ${item.vote_average ? item.vote_average.toFixed(1) : 'N/A'} Rating`;
+        document.getElementById('cardRating').innerHTML = `&#9733; ${item.vote_average ? item.vote_average.toFixed(1) : 'N/A'} Rating ${year}`;
         
         const badge = document.getElementById('cardBadge');
         badge.innerText = isTv ? 'SERIES' : 'MOVIE';
@@ -284,22 +350,31 @@ async function selectSearchedItem(item) {
             controls.style.display = 'none';
         }
 
-        container.classList.remove('fading');
+        container.classList.remove('fade-out');
     }, 350);
 
     closeSearchModal();
 }
 
-// --- WATCH / PLAYER LOGIC ---
+// --- 🎬 MULTI-SERVER WATCH LOGIC (MAY SUBTITLES) ---
 
 function handleWatchClick() {
+    const server = document.getElementById('serverSelect').value;
     let finalUrl = "";
-    if (currentItem.type === 'movie') {
-        finalUrl = `https://vidup.to/movie/${currentItem.id}?autoPlay=true`;
-    } else {
-        const season = document.getElementById('seasonSelect').value || 1;
-        const episode = document.getElementById('episodeSelect').value || 1;
-        finalUrl = `https://vidup.to/tv/${currentItem.id}/${season}/${episode}?autoPlay=true`;
+
+    const season = document.getElementById('seasonSelect').value || 1;
+    const episode = document.getElementById('episodeSelect').value || 1;
+
+    if (server === "1") {
+        // Server 1: Vidup
+        finalUrl = currentItem.type === 'movie'
+            ? `https://vidup.to/movie/${currentItem.id}?autoPlay=true`
+            : `https://vidup.to/tv/${currentItem.id}/${season}/${episode}?autoPlay=true`;
+    } else if (server === "2") {
+        // Server 2: VidSrc (Maraming Subtitles / CC button sa loob)
+        finalUrl = currentItem.type === 'movie'
+            ? `https://vidsrc.cc/v2/embed/movie/${currentItem.id}`
+            : `https://vidsrc.cc/v2/embed/tv/${currentItem.id}/${season}/${episode}`;
     }
 
     document.getElementById('videoPlayer').src = finalUrl;
@@ -312,8 +387,7 @@ function closePlayer() {
     document.getElementById('playerModal').style.display = 'none';
 }
 
-// SIMULAN ANG CAROUSEL PAGBUKAS NG SITE
+// PAGBUKAS NG SITE: Simulan ang Trending Carousel
 window.onload = () => {
-    applySlide(0);
-    startCarousel();
+    fetchTrendingAndStartCarousel();
 };
