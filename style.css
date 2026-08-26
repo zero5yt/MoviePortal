@@ -21,7 +21,6 @@ body {
     width: 100%;
 }
 
-/* USER PROFILE SA TAAS KALIWA */
 .user-profile-header {
     display: flex;
     align-items: center;
@@ -109,10 +108,23 @@ body {
 .movie-card {
     background: #1f1f1f;
     padding: 15px;
-    border-radius: 10px;
+    border-radius: 12px;
     width: 280px;
     text-align: center;
     box-shadow: 0 4px 20px rgba(0,0,0,0.6);
+    position: relative;
+}
+
+/* 🌟 FADE IN / FADE OUT TRANSITION */
+.fade-container {
+    transition: opacity 0.4s ease-in-out, transform 0.4s ease-in-out;
+    opacity: 1;
+    transform: scale(1);
+}
+
+.fade-container.fading {
+    opacity: 0;
+    transform: scale(0.97);
 }
 
 .poster {
@@ -128,6 +140,9 @@ body {
 #cardTitle {
     margin: 10px 0 5px 0;
     font-size: 18px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 #cardRating {
@@ -182,6 +197,30 @@ body {
 
 .btn-watch:hover {
     background-color: #f40612;
+}
+
+/* 🔘 CAROUSEL DOTS DESIGN */
+.carousel-dots {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    margin-top: 14px;
+}
+
+.dot {
+    width: 8px;
+    height: 8px;
+    background-color: #555;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.dot.active {
+    background-color: #e50914;
+    width: 22px; /* Nagiging pill style kapag active */
+    border-radius: 10px;
 }
 
 /* MODALS */
