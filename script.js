@@ -20,15 +20,16 @@ const auth = firebase.auth();
 const db = firebase.firestore();
 
 let currentUser = null;
-let currentItem = { id: 37854, type: 'tv' }; // Default: One Piece
+let currentItem = { id: 37854, type: 'tv' };
 
-// --- AUTH & PAYWALL LOGIC ---
+// --- GOOGLE AUTH & PAYWALL ---
 
 function loginWithGoogle() {
     const provider = new firebase.auth.GoogleAuthProvider();
     auth.signInWithPopup(provider).then((result) => {
         currentUser = result.user;
         document.getElementById('userInfo').innerText = `Logged in: ${currentUser.displayName}`;
+        updateHeaderUser(currentUser);
         checkUserPaymentStatus(currentUser.uid);
     }).catch(err => alert("Google Login Error: " + err.message));
 }
@@ -39,7 +40,7 @@ function checkUserPaymentStatus(uid) {
             alert("Welcome VIP User!");
             unlockSite();
         } else {
-            alert("Logged in! Paki-submit ang proof of payment sa ibaba.");
+            alert("Logged in! I-send lamang ang PayPal Transaction ID sa ibaba.");
         }
     });
 }
@@ -48,6 +49,9 @@ function checkSecretPass() {
     const pass = document.getElementById('secretPassInput').value.trim();
     if (pass === "almaras") {
         alert("Access Granted via Secret Pass!");
+        if (!currentUser) {
+            updateHeaderUser({ displayName: "Admin Roderick", photoURL: "" });
+        }
         unlockSite();
     } else {
         alert("Maling Password!");
@@ -66,24 +70,31 @@ function contactDev() {
     window.open(TELEGRAM_LINK, '_blank');
 }
 
-async function submitTransaction() {
+// I-UPDATE ANG HEADER SA TAAS KALIWA
+function updateHeaderUser(user) {
+    const avatar = document.getElementById('userAvatar');
+    const welcome = document.getElementById('userWelcome');
+
+    if (user && user.photoURL) {
+        avatar.src = user.photoURL;
+    }
+    if (user && user.displayName) {
+        const firstName = user.displayName.split(" ")[0];
+        welcome.innerText = `Hi, ${firstName}!`;
+    }
+}
+
+// SUBMIT TRANSACTION ID LANG (MAGAAN AT HINDI MAPUPUNO ANG DATABASE)
+function submitTransaction() {
     const refNo = document.getElementById('refInput').value.trim();
-    const fileInput = document.getElementById('proofInput');
 
     if (!currentUser) {
-        alert("Pindutin muna ang Sign in with Google!");
+        alert("Pindutin muna ang 'Sign In with Google' sa itaas!");
         return;
     }
     if (!refNo) {
-        alert("Pakilagay ang Reference ID!");
+        alert("Pakilagay ang Transaction / Reference ID!");
         return;
-    }
-
-    let base64Image = "";
-    if (fileInput.files.length > 0) {
-        const reader = new FileReader();
-        reader.readAsDataURL(fileInput.files[0]);
-        await new Promise(resolve => reader.onload = () => { base64Image = reader.result; resolve(); });
     }
 
     db.collection("transactions").add({
@@ -91,47 +102,53 @@ async function submitTransaction() {
         email: currentUser.email,
         name: currentUser.displayName,
         referenceNumber: refNo,
-        screenshot: base64Image,
         status: "Pending",
         timestamp: firebase.firestore.FieldValue.serverTimestamp()
     }).then(() => {
-        alert("Transaction submitted! Hintaying i-approve ng admin.");
-    }).catch(err => alert("Error: " + err.message));
+        alert("✅ Transaction ID Sent! Hintaying i-approve ng Admin.");
+        document.getElementById('refInput').value = "";
+    }).catch(err => {
+        alert("❌ Error: " + err.message);
+    });
 }
 
-// --- TMDB SEARCH & SELECTION LOGIC ---
+// --- TMDB SEARCH & UI ---
 
 async function searchTMDB() {
     const query = document.getElementById('searchInput').value.trim();
     if (!query) return;
 
     const url = `https://api.themoviedb.org/3/search/multi?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(query)}`;
-    const res = await fetch(url);
-    const data = await res.json();
-    
-    const list = document.getElementById('searchResultsList');
-    list.innerHTML = "";
-
-    const filtered = (data.results || []).filter(item => item.media_type === 'movie' || item.media_type === 'tv');
-    filtered.forEach(item => {
-        const title = item.title || item.name;
-        const isTv = item.media_type === 'tv';
-        const poster = item.poster_path ? `https://image.tmdb.org/t/p/w200${item.poster_path}` : 'https://via.placeholder.com/150';
+    try {
+        const res = await fetch(url);
+        const data = await res.json();
         
-        const div = document.createElement('div');
-        div.className = 'result-item';
-        div.innerHTML = `
-            <img src="${poster}" width="45" style="border-radius:4px;">
-            <div>
-                <div style="font-weight:bold;">${title}</div>
-                <span class="badge ${isTv ? 'badge-tv' : 'badge-movie'}">${isTv ? 'SERIES' : 'MOVIE'}</span>
-            </div>
-        `;
-        div.onclick = () => selectItem(item);
-        list.appendChild(div);
-    });
+        const list = document.getElementById('searchResultsList');
+        list.innerHTML = "";
 
-    document.getElementById('searchModal').style.display = 'flex';
+        const filtered = (data.results || []).filter(item => item.media_type === 'movie' || item.media_type === 'tv');
+        filtered.forEach(item => {
+            const title = item.title || item.name;
+            const isTv = item.media_type === 'tv';
+            const poster = item.poster_path ? `https://image.tmdb.org/t/p/w200${item.poster_path}` : 'https://via.placeholder.com/150';
+            
+            const div = document.createElement('div');
+            div.className = 'result-item';
+            div.innerHTML = `
+                <img src="${poster}" width="45" style="border-radius:4px;">
+                <div>
+                    <div style="font-weight:bold;">${title}</div>
+                    <span class="badge ${isTv ? 'badge-tv' : 'badge-movie'}">${isTv ? 'SERIES' : 'MOVIE'}</span>
+                </div>
+            `;
+            div.onclick = () => selectItem(item);
+            list.appendChild(div);
+        });
+
+        document.getElementById('searchModal').style.display = 'flex';
+    } catch (err) {
+        alert("Search error.");
+    }
 }
 
 async function selectItem(item) {
@@ -140,7 +157,7 @@ async function selectItem(item) {
     currentItem.type = item.media_type;
 
     document.getElementById('cardTitle').innerText = item.title || item.name;
-    document.getElementById('cardPoster').src = item.poster_path ? `https://image.tmdb.org/t/p/w500${item.poster_path}` : '';
+    document.getElementById('cardPoster').src = item.poster_path ? `https://image.tmdb.org/t/p/w500${item.poster_path}` : 'https://via.placeholder.com/500x750?text=No+Poster';
     document.getElementById('cardRating').innerHTML = `&#9733; ${item.vote_average ? item.vote_average.toFixed(1) : 'N/A'} Rating`;
     
     const badge = document.getElementById('cardBadge');
@@ -151,22 +168,24 @@ async function selectItem(item) {
 
     if (isTv) {
         controls.style.display = 'flex';
-        const res = await fetch(`https://api.themoviedb.org/3/tv/${item.id}?api_key=${TMDB_API_KEY}`);
-        const tvData = await res.json();
-        
-        const seasonSelect = document.getElementById('seasonSelect');
-        seasonSelect.innerHTML = "";
+        try {
+            const res = await fetch(`https://api.themoviedb.org/3/tv/${item.id}?api_key=${TMDB_API_KEY}`);
+            const tvData = await res.json();
+            
+            const seasonSelect = document.getElementById('seasonSelect');
+            seasonSelect.innerHTML = "";
 
-        (tvData.seasons || []).forEach(s => {
-            if (s.season_number > 0) {
-                const opt = document.createElement('option');
-                opt.value = s.season_number;
-                opt.innerText = `Season ${s.season_number}`;
-                seasonSelect.appendChild(opt);
-            }
-        });
+            (tvData.seasons || []).forEach(s => {
+                if (s.season_number > 0) {
+                    const opt = document.createElement('option');
+                    opt.value = s.season_number;
+                    opt.innerText = `Season ${s.season_number}`;
+                    seasonSelect.appendChild(opt);
+                }
+            });
 
-        loadSeasonEpisodes();
+            loadSeasonEpisodes();
+        } catch (e) {}
     } else {
         controls.style.display = 'none';
     }
@@ -174,26 +193,26 @@ async function selectItem(item) {
     closeSearchModal();
 }
 
-// --- DYNAMIC EPISODES LOADER ---
-
 async function loadSeasonEpisodes() {
     const seasonNumber = document.getElementById('seasonSelect').value || 1;
     const episodeSelect = document.getElementById('episodeSelect');
-    episodeSelect.innerHTML = "<option>Loading ep...</option>";
+    episodeSelect.innerHTML = "<option>Loading...</option>";
 
-    const res = await fetch(`https://api.themoviedb.org/3/tv/${currentItem.id}/season/${seasonNumber}?api_key=${TMDB_API_KEY}`);
-    const seasonData = await res.json();
+    try {
+        const res = await fetch(`https://api.themoviedb.org/3/tv/${currentItem.id}/season/${seasonNumber}?api_key=${TMDB_API_KEY}`);
+        const seasonData = await res.json();
 
-    episodeSelect.innerHTML = "";
-    (seasonData.episodes || []).forEach(ep => {
-        const opt = document.createElement('option');
-        opt.value = ep.episode_number;
-        opt.innerText = `Ep ${ep.episode_number}: ${ep.name || ''}`;
-        episodeSelect.appendChild(opt);
-    });
+        episodeSelect.innerHTML = "";
+        (seasonData.episodes || []).forEach(ep => {
+            const opt = document.createElement('option');
+            opt.value = ep.episode_number;
+            opt.innerText = `Ep ${ep.episode_number}: ${ep.name || ''}`;
+            episodeSelect.appendChild(opt);
+        });
+    } catch (e) {
+        episodeSelect.innerHTML = "<option value='1'>Episode 1</option>";
+    }
 }
-
-// --- WATCH / PLAYER LOGIC ---
 
 function handleWatchClick() {
     let finalUrl = "";
@@ -209,22 +228,23 @@ function handleWatchClick() {
     document.getElementById('playerModal').style.display = 'flex';
 }
 
-function closeSearchModal() { 
-    document.getElementById('searchModal').style.display = 'none'; 
-}
-
+function closeSearchModal() { document.getElementById('searchModal').style.display = 'none'; }
 function closePlayer() {
     document.getElementById('videoPlayer').src = '';
     document.getElementById('playerModal').style.display = 'none';
 }
 
-// Default load One Piece
-window.onload = () => {
-    selectItem({ 
-        id: 37854, 
-        media_type: 'tv', 
-        name: 'One Piece', 
-        poster_path: '/dum1NsAYVfyxGM14DYJgNf5i89q.jpg', 
-        vote_average: 8.8 
-    });
+// Auto-load One Piece
+window.onload = async () => {
+    try {
+        const res = await fetch(`https://api.themoviedb.org/3/tv/37854?api_key=${TMDB_API_KEY}`);
+        const data = await res.json();
+        selectItem({
+            id: data.id,
+            media_type: 'tv',
+            name: data.name,
+            poster_path: data.poster_path,
+            vote_average: data.vote_average
+        });
+    } catch (e) {}
 };
