@@ -115,14 +115,14 @@ body {
     position: relative;
 }
 
-/* 🌟 FADE IN / FADE OUT TRANSITION */
-.fade-container {
+/* 🌟 FADE ANIMATION */
+.fade-element {
     transition: opacity 0.4s ease-in-out, transform 0.4s ease-in-out;
     opacity: 1;
     transform: scale(1);
 }
 
-.fade-container.fading {
+.fade-element.fade-out {
     opacity: 0;
     transform: scale(0.97);
 }
@@ -163,7 +163,7 @@ body {
 .badge-movie { background: #007bff; }
 .badge-tv { background: #9b59b6; }
 
-/* SEASON & EPISODE DROPDOWNS */
+/* CONTROLS & SERVER SELECTOR */
 .series-controls {
     display: flex;
     justify-content: space-between;
@@ -171,15 +171,32 @@ body {
     margin: 10px 0;
 }
 
-.series-controls select {
+.series-controls select, .server-box select {
     padding: 8px;
     border-radius: 4px;
     border: 1px solid #444;
     background: #333;
     color: white;
-    width: 50%;
     cursor: pointer;
     font-size: 13px;
+}
+
+.series-controls select { width: 50%; }
+
+.server-box {
+    margin: 10px 0 5px 0;
+    text-align: left;
+}
+
+.server-box label {
+    font-size: 12px;
+    color: #aaa;
+    display: block;
+    margin-bottom: 4px;
+}
+
+.server-box select {
+    width: 100%;
 }
 
 .btn-watch {
@@ -191,7 +208,7 @@ body {
     border-radius: 6px;
     cursor: pointer;
     width: 100%;
-    margin-top: 10px;
+    margin-top: 8px;
     font-size: 15px;
 }
 
@@ -199,13 +216,14 @@ body {
     background-color: #f40612;
 }
 
-/* 🔘 CAROUSEL DOTS DESIGN */
+/* 🔘 CAROUSEL DOTS */
 .carousel-dots {
     display: flex;
     justify-content: center;
     align-items: center;
     gap: 8px;
     margin-top: 14px;
+    min-height: 12px;
 }
 
 .dot {
@@ -219,7 +237,7 @@ body {
 
 .dot.active {
     background-color: #e50914;
-    width: 22px; /* Nagiging pill style kapag active */
+    width: 22px;
     border-radius: 10px;
 }
 
@@ -277,7 +295,7 @@ body {
 .btn-google { background: #4285f4; color: white; }
 .btn-paypal { background: #0070ba; color: white; }
 .btn-submit { background: #28a745; color: white; }
-.btn-secret { background: #ff9800; color: black; }
+.btn-owner { background: #ff9800; color: black; margin-top: 10px; }
 .btn-dev { background: #229ED9; color: white; }
 
 .transaction-box {
@@ -289,23 +307,35 @@ body {
 
 .tx-title { margin: 0 0 8px 0; font-size: 13px; font-weight: bold; }
 
-.secret-pass-box {
-    margin-top: 10px;
-    border-top: 1px solid #333;
-    padding-top: 10px;
-}
-
-/* SEARCH ITEMS */
+/* 🔍 SEARCH ITEMS NA MAY YEAR */
 .result-item {
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: 8px;
+    padding: 10px;
     border-bottom: 1px solid #333;
     cursor: pointer;
     text-align: left;
 }
+
 .result-item:hover { background: #2a2a2a; }
+
+.result-info {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.result-title-row {
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.result-year-badge {
+    color: #ff9800;
+    font-weight: bold;
+    font-size: 13px;
+}
 
 /* BUILT-IN PLAYER */
 .player-frame {
