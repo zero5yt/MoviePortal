@@ -7,10 +7,10 @@
     
     <link rel="stylesheet" href="style.css">
 
-    <!-- Firebase SDKs -->
+    <!-- Firebase SDKs (Realtime Database Activated) -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 </head>
 <body>
 
@@ -26,7 +26,7 @@
             <button class="paywall-btn btn-google" onclick="loginWithGoogle()">🔑 Sign In with Google</button>
             <button class="paywall-btn btn-paypal" onclick="openPayPal()">💳 Pay 50 PHP via PayPal</button>
 
-            <!-- SUBMIT TRANSACTION ID ONLY (WALANG SCREENSHOT) -->
+            <!-- SUBMIT TRANSACTION ID ONLY -->
             <div class="transaction-box">
                 <p class="tx-title">Submit PayPal Transaction ID:</p>
                 <input type="text" id="refInput" class="paywall-input" placeholder="Enter Transaction / Reference ID">
@@ -43,10 +43,9 @@
         </div>
     </div>
 
-    <!-- 2. HEADER NA MAY PROFILE SA TAAS KALIWA AT LOGO/SEARCH -->
+    <!-- 2. HEADER -->
     <header class="site-header">
         <div class="top-bar">
-            <!-- GOOGLE AVATAR & WELCOME MESSAGE SA KALIWA -->
             <div id="userProfileHeader" class="user-profile-header">
                 <img id="userAvatar" src="https://www.gstatic.com/images/branding/product/1x/avatar_square_grey_512dp.png" alt="Profile" class="user-avatar">
                 <div class="user-info-text">
@@ -54,19 +53,16 @@
                     <span class="user-vip-badge">VIP Member</span>
                 </div>
             </div>
-
-            <!-- LOGO SA KANAN/GITNA -->
             <img src="logo.png" alt="StreamixPH" class="site-logo" onerror="this.style.display='none'">
         </div>
 
-        <!-- SEARCH BAR -->
         <div class="search-container">
             <input type="text" id="searchInput" class="search-input" placeholder="Search Movie or Series..." onkeydown="if(event.key==='Enter') searchTMDB()">
             <button class="search-btn" onclick="searchTMDB()">Search</button>
         </div>
     </header>
 
-    <!-- 3. SHOWCASE MOVIE/SERIES CARD -->
+    <!-- 3. SHOWCASE CARD -->
     <main class="showcase-area">
         <div class="movie-card">
             <span id="cardBadge" class="badge badge-tv">SERIES</span>
@@ -83,7 +79,7 @@
         </div>
     </main>
 
-    <!-- 4. SEARCH RESULTS MODAL -->
+    <!-- 4. SEARCH MODAL -->
     <div id="searchModal" class="modal-overlay">
         <div class="modal-box modal-search">
             <button class="close-btn" onclick="closeSearchModal()">✕</button>
