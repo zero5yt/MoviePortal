@@ -7,7 +7,7 @@
     
     <link rel="stylesheet" href="style.css">
 
-    <!-- Firebase SDKs (Realtime Database Activated) -->
+    <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
@@ -26,7 +26,7 @@
             <button class="paywall-btn btn-google" onclick="loginWithGoogle()">🔑 Sign In with Google</button>
             <button class="paywall-btn btn-paypal" onclick="openPayPal()">💳 Pay 50 PHP via PayPal</button>
 
-            <!-- SUBMIT TRANSACTION ID ONLY -->
+            <!-- SUBMIT TRANSACTION ID -->
             <div class="transaction-box">
                 <p class="tx-title">Submit PayPal Transaction ID:</p>
                 <input type="text" id="refInput" class="paywall-input" placeholder="Enter Transaction / Reference ID">
@@ -62,20 +62,30 @@
         </div>
     </header>
 
-    <!-- 3. SHOWCASE CARD -->
+    <!-- 3. SHOWCASE CARD NA MAY FADE CAROUSEL AT DOTS -->
     <main class="showcase-area">
         <div class="movie-card">
-            <span id="cardBadge" class="badge badge-tv">SERIES</span>
-            <img id="cardPoster" class="poster" src="https://image.tmdb.org/t/p/w500/dum1NsAYVfyxGM14DYJgNf5i89q.jpg" alt="Poster">
-            <h3 id="cardTitle">One Piece</h3>
-            <p id="cardRating">&#9733; 8.8 Rating (1999)</p>
+            <!-- Naka-wrap ang content para sa Fade Transition -->
+            <div id="cardFadeContent" class="fade-container">
+                <span id="cardBadge" class="badge badge-tv">SERIES</span>
+                <img id="cardPoster" class="poster" src="" alt="Poster">
+                <h3 id="cardTitle">Loading...</h3>
+                <p id="cardRating">&#9733; Rating</p>
 
-            <div id="seriesControls" class="series-controls">
-                <select id="seasonSelect" onchange="loadSeasonEpisodes()"></select>
-                <select id="episodeSelect"></select>
+                <div id="seriesControls" class="series-controls">
+                    <select id="seasonSelect" onchange="loadSeasonEpisodes()"></select>
+                    <select id="episodeSelect"></select>
+                </div>
             </div>
 
             <button class="btn-watch" onclick="handleWatchClick()">Watch Now</button>
+
+            <!-- 🔘 3 CAROUSEL DOTS SA IBABA -->
+            <div id="carouselDots" class="carousel-dots">
+                <span class="dot active" onclick="manualSelectSlide(0)"></span>
+                <span class="dot" onclick="manualSelectSlide(1)"></span>
+                <span class="dot" onclick="manualSelectSlide(2)"></span>
+            </div>
         </div>
     </main>
 
